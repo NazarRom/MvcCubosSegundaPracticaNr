@@ -1,9 +1,16 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MvcCubosSegundaPracticaNr.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+string azureKeys = builder.Configuration.GetValue<string>("AzureKeys:StorageAccount");
+BlobServiceClient blobServiceClient = new BlobServiceClient(azureKeys);
+builder.Services.AddTransient<BlobServiceClient>(x => blobServiceClient);
+builder.Services.AddTransient<ServiceStorageBlobs>();
+
+
 builder.Services.AddControllersWithViews(options => options.EnableEndpointRouting = false);
 builder.Services.AddTransient<ServiceCubos>();
 builder.Services.AddDistributedMemoryCache();

@@ -8,15 +8,28 @@ namespace MvcCubosSegundaPracticaNr.Controllers
     public class CubosController : Controller
     {
         private ServiceCubos service;
-        public CubosController(ServiceCubos service)
+        private ServiceStorageBlobs serviceBlobs;
+        public CubosController(ServiceCubos service, ServiceStorageBlobs serviceBlobs)
         {
             this.service = service;
+            this.serviceBlobs = serviceBlobs;
         }
         //get all cubos
         public async Task<IActionResult> Index()
         {
-            List<Cubo> cubos = await this.service.GetCubosAsync();
+            List<Cubo> cubos = new();
+
+            cubos = await this.service.GetCubosAsync();
+            foreach (var cub in cubos)
+            {
+                if (cub.Imagen != null)
+                {
+                    cub.Imagen = await this.serviceBlobs.GetBlobUriAsync("publicfotos", cub.Imagen);
+                }
+            }
+
             return View(cubos);
+
         }
 
         //get cubos by marca
@@ -37,23 +50,39 @@ namespace MvcCubosSegundaPracticaNr.Controllers
         }
         //insert new User
         [HttpPost]
-        public async Task<IActionResult> InsertNewUser(Usuario user)
+        public async Task<IActionResult> InsertNewUser(Usuario user, IFormFile file)
         {
-            await this.service.InsertUserAsync(user.Nombre, user.Email, user.Pass, user.Imagen);
+            string blobName = file.FileName;
+
+            using (Stream stream = file.OpenReadStream())
+            {
+                await this.serviceBlobs.UploadBlobAsync("privatefotos", blobName, stream);
+            }
+            await this.service.InsertUserAsync(user.Nombre, user.Email, user.Pass, blobName);
             return RedirectToAction("Index");
         }
 
         //insert new Cubo
         public IActionResult InsertNewCubo()
-        {          
+        {
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> InsertNewCubo(Cubo cubo)
+        public async Task<IActionResult> InsertNewCubo(Cubo cubo, IFormFile file)
         {
-            await this.service.InsertCuboAsync(cubo.Nombre, cubo.Marca, cubo.Imagen, cubo.Precio);
+           
+            string blobName = file.FileName;
+
+            using (Stream stream = file.OpenReadStream())
+            {
+                await this.serviceBlobs.UploadBlobAsync("publicfotos", blobName, stream);
+            }
+
+            await this.service.InsertCuboAsync(cubo.Nombre, cubo.Marca, blobName, cubo.Precio);
             return RedirectToAction("Index");
         }
+       
+
         //perfil
         [AuthorizeCubos]
         public async Task<IActionResult> PerfilUser()
@@ -62,6 +91,7 @@ namespace MvcCubosSegundaPracticaNr.Controllers
                 HttpContext.Session.GetString("TOKEN");
             Usuario usuario = await
                 this.service.GetPerfilUserAsync(token);
+          ViewData["private"] = await this.serviceBlobs.GetBlobUriAsync("privatefotos", usuario.Imagen);
             return View(usuario);
         }
 
