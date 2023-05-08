@@ -1,0 +1,59 @@
+﻿@model IEnumerable<MvcCubosSegundaPracticaNr.Models.CompraCubo>
+
+@{
+    ViewData["Title"] = "PedidosUser";
+}
+
+<h1>PedidosUser</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+@if(Model != null)
+{
+  <table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id_Pedido)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Id_Cubo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Id_Usario)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaPedidio)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id_Pedido)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id_Cubo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id_Usario)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaPedidio)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>  
+}else{
+    <p>No hay pedidos</p>
+}
+
